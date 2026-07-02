@@ -49,39 +49,32 @@ mutation rate, calibration
 \section{Introduction}
 \label{sec:intro}
 
-Genomic language models are increasingly presented as general predictors of noncoding
-variant effect. The headline evidence is zero-shot: a pretrained model scores a single
-nucleotide variant (SNV) by the log-likelihood ratio between the alternate and reference
-alleles, $\mathrm{LLR}=\log p(\text{alt})-\log p(\text{ref})$, and this score is ranked
-against clinical or functional labels \citep{benegas2025gpnmsa,brixi2026evo2}. Reported
-aggregate AUROCs on noncoding ClinVar routinely exceed $0.95$, which is often read as
-evidence that the models have learned regulatory grammar.
+Genomic language models (gLMs) are increasingly used as zero-shot predictors of noncoding
+variant effect: a pretrained model scores a single-nucleotide variant (SNV) by the
+log-likelihood ratio $\mathrm{LLR}=\log p(\text{alt})-\log p(\text{ref})$, ranked against
+clinical or functional labels \citep{benegas2025gpnmsa,brixi2026evo2}. Aggregate AUROCs on
+noncoding ClinVar routinely exceed $0.95$, read as evidence that the models have learned
+regulatory grammar.
 
-Three recent results complicate that reading. On designed synthetic promoters, the
-compositional sensitivity of gLMs tracks AT content almost perfectly and a small
-position-aware model beats billion-parameter gLMs \citep{mit2026}. Stratifying ClinVar by
-region type collapses Evo2's aggregate noncoding AUROC because pathogenic variants
-concentrate in easy region categories \citep{lu2025heterogeneity}. Cyclic permutation of
-flanking context collapses Evo2 tRNA sensitivity, which shows that predictions ride on
-irrelevant genomic context \citep{mathur2026blindspots}. Separately,
-\citet{tang2025koo} report that frozen gLM representations give little advantage over
-one-hot encodings on cell-type-specific regulatory tasks, and information-theoretic analyses
-find that the usable information in genomic foundation models concentrates in embedding
-rather than transformer layers \citep{entropy2026}.
+Recent work complicates that reading. On synthetic promoters, gLM compositional sensitivity
+tracks AT content almost perfectly and a small position-aware model beats billion-parameter
+gLMs \citep{mit2026}. Stratifying ClinVar by region type collapses Evo2's aggregate noncoding
+AUROC, because pathogenic variants concentrate in easy regions \citep{lu2025heterogeneity}.
+Cyclic permutation of flanking context collapses Evo2 tRNA sensitivity, so predictions ride on
+irrelevant context \citep{mathur2026blindspots}. Frozen gLM representations give little
+advantage over one-hot encodings on regulatory tasks \citep{tang2025koo}, and the usable
+information concentrates in embedding rather than transformer layers \citep{entropy2026}.
 
-These studies identify positional-grammar, region-type and context-artifact confounds. We
-study a distinct axis that none of them isolates on real VEP: local \emph{base composition}
-and \emph{mutational expectedness}. The mechanism is direct. A model's likelihood partly
-encodes how expected a substitution is under neutral evolution. CpG transitions mutate an
-order of magnitude faster than transversions, the transition/transversion ratio is a
-function of local CpG content, and mutation subtype couples to GC background
-\citep{carlson2018mutrate}. Because pathogenic and causal variants are ascertained
-non-randomly across mutation types, the mutation-expectedness component of LLR correlates
-with labels for reasons unrelated to regulatory understanding. This is precisely why
-CADD and GPN-MSA use common variants rather than ClinVar-benign as controls
-\citep{rentzsch2019cadd,benegas2025gpnmsa}. \citet{gpnstar2025} reported that raw gLM scores
-correlate with pentanucleotide mutation-rate estimates at $\rho=0.31$--$0.34$ and introduced
-a per-context calibration for a single model as a training-adjacent step.
+These identify positional-grammar, region-type and context-artifact confounds. We isolate a
+distinct axis on real VEP: local \emph{base composition} and \emph{mutational expectedness}.
+The mechanism is direct. A model's likelihood partly encodes how expected a substitution is
+under neutral evolution: CpG transitions mutate an order of magnitude faster than
+transversions, and mutation subtype couples to CpG and GC content \citep{carlson2018mutrate}.
+Because pathogenic variants are ascertained non-randomly across mutation types, this component
+of LLR correlates with labels for reasons unrelated to function, which is why CADD and GPN-MSA
+prefer gnomAD-common over ClinVar-benign controls \citep{rentzsch2019cadd,benegas2025gpnmsa}.
+GPN-Star found raw gLM scores track pentanucleotide mutation rate at $\rho=0.31$--$0.34$ and
+calibrated a single model at training time \citep{gpnstar2025}.
 
 \paragraph{Contributions.} We turn that observation into a benchmark-wide, cross-model,
 post-hoc audit. (1) We show a context-free composition baseline recovers about half of the
@@ -98,11 +91,22 @@ TF-motif-disrupting variants (\S\ref{sec:e6}). Our framing follows the confound-
 of \citet{gupta2025background}: name a hidden confound, build a clean evaluation, measure its
 effect across a model class, and localise where real signal remains.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig0_concept.pdf}
+\caption{\textbf{The confound in one picture.} A zero-shot gLM scores a variant by its
+log-likelihood ratio, which mixes a regulatory-function term with a mutation-expectedness term
+set by local base composition. The second term needs no learning: a context-free baseline
+recovers about half of gLM AUROC on unmatched benchmarks, a post-hoc pentanucleotide
+calibration removes it, and the signal that survives concentrates on motif-disrupting variants.}
+\label{fig:concept}
+\end{figure}
+
 \section{The composition and mutation-expectedness confound}
 \label{sec:confound}
 
 We define two entangled axes, both computed with no learning, for an SNV at position $p$
-with reference and alternate alleles.
+(Figure~\ref{fig:concept}).
 
 \paragraph{C1, local composition change.} For window half-width $w$, let $s_{\text{ref}}$ and
 $s_{\text{alt}}$ be the $\pm w$ sequences. We take $\Delta_k$, the $L_1$ distance between the
@@ -114,11 +118,11 @@ $w\in\{11,21,51\}$ bp.
 specific substitution \citep{carlson2018mutrate}, the CpG status of the reference and
 alternate sites, the transition/transversion class, and the flanking GC background.
 
-All features are strand-invariant by construction. Under a simple mechanism model
+All features are strand-invariant. Under the model
 $\mathrm{LLR}\approx\alpha\cdot(\text{function})+\beta\cdot(\text{expectedness})+\varepsilon$,
-the confound is the $\beta$ term. It correlates with labels through ascertainment, not
-through regulatory understanding. Matching and calibration target $\beta$; the residual
-$\alpha$ is what a gLM should contribute beyond a mutation-rate lookup.
+the confound is the $\beta$ term, which tracks labels through ascertainment rather than
+function; matching and calibration target $\beta$, leaving $\alpha$ as the gLM's genuine
+contribution beyond a mutation-rate lookup.
 
 \section{Experimental setup}
 \label{sec:setup}
@@ -137,27 +141,23 @@ background. \emph{Genomics Long-Range Benchmark (GLRB) causal expression QTL}
 \citep{glrb2024}: $8{,}850$ held-out test SNVs where zero-shot DNA LMs are known to be near
 chance.
 
-\paragraph{Models.} We use authors' released per-variant scores wherever available so that
-model quality is not confounded by our own inference. On TraitGym this gives eight gLMs
-(GPN-MSA, an alignment-based multiple-sequence-alignment (MSA) model; GPN, its
-single-sequence counterpart; Evo2-7B and Evo2-40B; Nucleotide Transformer; Caduceus;
-HyenaDNA; and SpeciesLM) plus CADD, phyloP and phastCons. On ClinVar we use precomputed Evo2-7B/40B and Nucleotide Transformer scores
-together with a genome-wide GPN-MSA tabix lookup, CADD, phyloP and SpliceAI. GPN-MSA is the
-alignment-based anchor present on every benchmark. Our composition baseline is a
-histogram gradient-boosted-tree classifier (250 trees, learning rate $0.05$) on the $19$
-C1/C2 features only (the $\Delta_k$ and $\Delta$GC values at the three windows, the
-pentanucleotide rate, CpG and transition indicators, and flanking GC), with no sequence
-context and no embedding. As a learned-from-scratch reference we also train a small one-hot
-CNN on $\pm 100$ bp windows under the same folds (the ``does pretraining help'' control).
+\paragraph{Models.} We use authors' released per-variant scores throughout, so model quality
+is not confounded by our inference. TraitGym supplies eight gLMs (GPN-MSA, an alignment-based
+multiple-sequence-alignment model; GPN, its single-sequence counterpart; Evo2-7B/40B;
+Nucleotide Transformer; Caduceus; HyenaDNA; SpeciesLM) plus CADD, phyloP and phastCons. On
+ClinVar we use precomputed Evo2-7B/40B and Nucleotide Transformer scores, a genome-wide
+GPN-MSA tabix lookup, CADD, phyloP and SpliceAI. GPN-MSA, the alignment-based anchor, appears
+on every benchmark. Our composition baseline is a histogram gradient-boosted-tree classifier
+($250$ trees, learning rate $0.05$) on the $19$ C1/C2 features only, with no sequence context;
+a small one-hot CNN on $\pm100$ bp windows serves as a learned-from-scratch reference.
 
-\paragraph{Protocol.} We report the area under the ROC curve (AUROC) and the area under the
-precision-recall curve (AUPRC), oriented so that higher scores indicate the positive class.
-Binary benchmarks use leave-one-chromosome-out cross-validation with sample-size-weighted
-averaging \citep{benegas2025traitgym}. We use partial Spearman correlations controlling for
-consequence or region, the paired DeLong test for AUROC differences, Benjamini--Hochberg
-control across model$\times$benchmark comparisons, and percentile bootstrap intervals. The
-composition classifier is trained under the same leave-one-chromosome-out folds as the
-evaluation so that recovery ratios are comparable and no variant informs its own fold.
+\paragraph{Protocol.} We report the area under the ROC curve (AUROC) and the precision-recall
+curve (AUPRC), oriented so higher scores mark the positive class. Binary benchmarks use
+leave-one-chromosome-out cross-validation with sample-size-weighted averaging
+\citep{benegas2025traitgym}, partial Spearman correlations controlling for consequence or
+region, the paired DeLong test with Benjamini--Hochberg control across
+model$\times$benchmark comparisons, and percentile bootstrap intervals. The composition
+classifier uses the same folds, so no variant informs its own fold.
 
 \section{Results}
 
@@ -173,20 +173,16 @@ models (Nucleotide Transformer, Caduceus, HyenaDNA) are near zero. Conservation 
 show similar coupling to the models. The confound is present but is not uniform across the
 model class.
 
-This coupling is not an artifact of the labelled sets. At genome-wide neutral sites, GPN-MSA's
-mean score per pentanucleotide context tracks the Carlson neutral mutation rate at Spearman
-$\rho=0.63$ ($p<10^{-16}$, all $3{,}072$ contexts, from $3.6\times10^{7}$ sampled scores):
-highly mutable contexts, above all CpG sites, receive systematically less deleterious scores
-(mean $-0.10$ at CpG-centred contexts versus $-1.33$ elsewhere). The model has learned the
-neutral mutation spectrum, which is exactly the component that leaks into the LLR when
-variants are ascertained non-randomly across mutation types.
+This is not an artifact of the labelled sets. At genome-wide neutral sites, GPN-MSA's mean
+score per pentanucleotide context tracks the Carlson neutral mutation rate at $\rho=0.63$
+($p<10^{-16}$, $3{,}072$ contexts, $3.6\times10^{7}$ scores): highly mutable contexts, above all
+CpG, receive less deleterious scores ($-0.10$ versus $-1.33$ elsewhere). The model has learned
+the neutral spectrum, the very component that leaks into LLR under non-random ascertainment.
 
-That ascertainment is directly visible in the labels. In ClinVar, benign SNVs sit at higher
-mutation-rate contexts than pathogenic ones (mean pentanucleotide rate $0.033$ versus $0.028$,
-$p<10^{-140}$), are more often transitions ($76\%$ versus $65\%$, $p<10^{-290}$), and more
-often CpG ($35\%$ versus $31\%$). A score that encodes the neutral spectrum therefore separates
-the two classes without any regulatory understanding, which is the label pathway the confound
-travels.
+That ascertainment is visible in the labels: ClinVar benign SNVs sit at higher mutation-rate
+contexts than pathogenic ones ($0.033$ versus $0.028$, $p<10^{-140}$), and are more often
+transitions ($76\%$ versus $65\%$) and CpG ($35\%$ versus $31\%$). A score encoding the neutral
+spectrum thus separates the classes with no regulatory understanding.
 
 \begin{figure}[t]
 \centering
@@ -203,23 +199,18 @@ alignment-based and large models keep a stable edge.}
 \label{sec:e2}
 
 On ClinVar the composition-only classifier reaches AUROC $0.720$ (bootstrap 95\% confidence
-interval, CI, $0.716$--$0.722$) with no sequence context and no model. The leading models reach $0.958$
+interval, CI, $0.716$--$0.722$) with no sequence context. The leading models reach $0.958$
 (GPN-MSA), $0.960$ (Evo2-7B), $0.963$ (Evo2-40B), $0.986$ (CADD) and $0.912$ (phyloP), so the
-recovery ratio $(\text{comp}-0.5)/(\text{model}-0.5)$ is $0.45$--$0.53$ for every one of them
-(all DeLong $p\approx 0$; the baseline is below each model, but recovers roughly half of its
-above-chance discrimination). On composition-matched TraitGym the same baseline reaches only
-$0.586$ (Mendelian) and $0.520$ (complex), with recovery ratios of $0.21$--$0.25$ for the
-leading models (GPN-MSA, Evo2-40B, CADD, phyloP); weaker gLMs such as Evo2-7B ($0.41$) and
-SpeciesLM ($0.72$) recover higher precisely because they sit closer to the composition
-baseline. On GLRB causal eQTL the baseline
-($0.596$) matches or exceeds GPN-MSA ($0.560$), so the little signal present is
-composition-explainable. Table~\ref{tab:main} reports the full comparison and
-Figure~\ref{fig:recovery} summarises the roughly two-fold difference between unmatched and
-matched benchmarks. The difference is significant: the composition-only AUROC is $0.720$
-(bootstrap 95\% CI $0.716$--$0.722$) on ClinVar versus $0.586$ ($0.556$--$0.613$) on TraitGym
-Mendelian and $0.520$ ($0.503$--$0.540$) on complex, with non-overlapping intervals, while the
-model AUROC intervals are narrow given $n>10^4$. Matching removes about half of the confound,
-which is a positive result for TraitGym, but a measurable residual leaks past even MAF- and
+recovery ratio $(\text{comp}-0.5)/(\text{model}-0.5)$ is $0.45$--$0.53$ for every one (all
+DeLong $p\approx 0$). On composition-matched TraitGym the same baseline reaches only $0.586$
+(Mendelian) and $0.520$ (complex), with recovery ratios of $0.21$--$0.25$ for the leading
+models (GPN-MSA, Evo2-40B, CADD, phyloP); weaker gLMs such as Evo2-7B ($0.41$) and SpeciesLM
+($0.72$) recover higher because they sit closer to the composition baseline. On GLRB causal
+eQTL the baseline ($0.596$) matches or exceeds GPN-MSA ($0.560$). This roughly two-fold gap
+between unmatched and matched benchmarks (Table~\ref{tab:main}, Figure~\ref{fig:recovery}) is
+significant: the composition CIs on ClinVar, Mendelian and complex ($0.716$--$0.722$,
+$0.556$--$0.613$, $0.503$--$0.540$) do not overlap. Matching removes about half of the
+confound, a positive result for TraitGym, but a measurable residual leaks past even MAF- and
 LD-matched controls.
 
 The ClinVar result is not an artifact of coding overlap. Restricting to the strict-noncoding
@@ -236,11 +227,10 @@ variants concentrate at the high-mutation-rate contexts the composition features
 Because the recovery ratio is not a decomposition, we also test unique contribution by
 combining composition and model features under the same folds. On ClinVar, adding GPN-MSA to
 composition raises AUROC from $0.717$ to $0.971$ ($+0.254$), while adding composition to
-GPN-MSA adds only $+0.013$ (Evo2-40B: $+0.193$ versus $+0.057$). The strong models thus
-subsume composition and carry large independent signal
-on top of it, whereas the smaller single-sequence gLMs do not exceed composition
-(Table~\ref{tab:main}). The confound inflates the leaderboard \emph{impression} without making
-the stronger models reducible to composition.
+GPN-MSA adds only $+0.013$ (Evo2-40B: $+0.193$ versus $+0.057$). The strong models thus subsume
+composition and carry large independent signal on top of it, whereas the smaller
+single-sequence gLMs do not exceed composition (Table~\ref{tab:main}); the confound inflates
+the leaderboard \emph{impression} without making the stronger models reducible to composition.
 
 \begin{figure}[t]
 \centering
@@ -379,15 +369,14 @@ genuinely testable.
 \section{Discussion}
 \label{sec:discussion}
 
-Our results support a specific and calibrated claim rather than a blanket dismissal. A
-context-free composition and mutation-rate baseline recovers about half of the apparent
-zero-shot VEP performance of leading gLMs on the unmatched, region-heterogeneous benchmarks
-that dominate reported leaderboards, and about a fifth on carefully matched benchmarks. The
-confound bites hardest on the smaller single-sequence gLMs, which do not exceed the baseline on
-any benchmark, consistent with \citet{tang2025koo}. Alignment-based and large autoregressive
-models keep signal that survives
-composition matching and concentrates on motif-disrupting variants. The confound is an
-across-set ascertainment phenomenon, not a local-context artifact.
+Our claim is specific, not a blanket dismissal. A context-free composition and mutation-rate
+baseline recovers about half of the apparent zero-shot VEP performance of leading gLMs on the
+unmatched, region-heterogeneous benchmarks that dominate leaderboards, and about a fifth on
+matched benchmarks. The confound bites hardest on the smaller single-sequence gLMs, which do
+not exceed the baseline on any benchmark, consistent with \citet{tang2025koo}. Alignment-based
+and large autoregressive models keep signal that survives matching and concentrates on
+motif-disrupting variants. The confound is an across-set ascertainment phenomenon, not a
+local-context artifact.
 
 \paragraph{Limitations.} We score zero-shot LLR, the deployed clinical setting and the
 headline claim in gLM VEP papers; fine-tuning is out of scope. The recovery ratio depends on
