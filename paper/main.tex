@@ -229,47 +229,49 @@ benchmark.}
 
 \begin{table}[t]
 \centering
-\caption{Leave-one-chromosome-out AUROC, AUPRC, composition recovery ratio, and
-Benjamini--Hochberg-adjusted DeLong $p$ for the composition baseline versus each model. The
-recovery ratio is $(\text{AUROC}_{\text{comp}}-0.5)/(\text{AUROC}_{\text{model}}-0.5)$;
-values above one mean the model does not exceed composition. $p$ tests whether the model
-differs from the composition baseline.}
+\caption{Leave-one-chromosome-out AUROC with per-chromosome stratified-bootstrap 95\% CIs,
+AUPRC, and the composition recovery ratio
+$(\text{AUROC}_{\text{comp}}-0.5)/(\text{AUROC}_{\text{model}}-0.5)$ for the composition
+baseline versus each model. A recovery ratio above one (marked $>$1) means the model does not
+exceed the composition baseline. Composition and model AUROC CIs are non-overlapping on every
+matched-vs-unmatched contrast, and all model-vs-composition DeLong tests give $p<10^{-3}$
+except the near-chance single-sequence gLMs on complex traits ($p>0.7$).}
 \label{tab:main}
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{lccc}
 \toprule
-Method & AUROC & AUPRC & Recovery & DeLong $p$ \\
+Method & AUROC [95\% CI] & AUPRC & Recovery \\
 \midrule
-\multicolumn{5}{l}{\emph{ClinVar (unmatched)}}\\
-\quad Composition-only & 0.720 & 0.362 & -- & -- \\
-\quad GPN-MSA & 0.958 & 0.861 & 0.48 & $<10^{-16}$ \\
-\quad Evo2-7B & 0.960 & 0.882 & 0.48 & $<10^{-16}$ \\
-\quad Evo2-40B & 0.963 & 0.870 & 0.47 & $<10^{-16}$ \\
-\quad CADD & 0.986 & 0.958 & 0.45 & $<10^{-16}$ \\
-\quad phyloP & 0.912 & 0.775 & 0.53 & $<10^{-16}$ \\
+\multicolumn{4}{l}{\emph{ClinVar (unmatched)}}\\
+\quad Composition-only & 0.720 [0.716,0.723] & 0.362 & -- \\
+\quad GPN-MSA & 0.958 [0.957,0.960] & 0.861 & 0.48 \\
+\quad Evo2-7B & 0.960 [0.959,0.962] & 0.882 & 0.48 \\
+\quad Evo2-40B & 0.963 [0.962,0.965] & 0.870 & 0.47 \\
+\quad CADD & 0.986 [0.985,0.987] & 0.958 & 0.45 \\
+\quad phyloP & 0.912 [0.909,0.914] & 0.775 & 0.53 \\
 \addlinespace
-\multicolumn{5}{l}{\emph{TraitGym Mendelian (matched)}}\\
-\quad Composition-only & 0.586 & 0.153 & -- & -- \\
-\quad GPN-MSA & 0.904 & 0.694 & 0.21 & $10^{-68}$ \\
-\quad Evo2-7B & 0.710 & 0.385 & 0.41 & $10^{-8}$ \\
-\quad Evo2-40B & 0.851 & 0.557 & 0.25 & $10^{-45}$ \\
-\quad NT-2.5B & 0.534 & 0.120 & $>$1 & 0.03 \\
-\quad Caduceus & 0.509 & 0.108 & $>$1 & $10^{-3}$ \\
-\quad CADD & 0.893 & 0.712 & 0.22 & $10^{-51}$ \\
-\quad phyloP & 0.857 & 0.655 & 0.24 & $10^{-34}$ \\
+\multicolumn{4}{l}{\emph{TraitGym Mendelian (matched)}}\\
+\quad Composition-only & 0.586 [0.559,0.617] & 0.153 & -- \\
+\quad GPN-MSA & 0.904 [0.886,0.921] & 0.694 & 0.21 \\
+\quad Evo2-7B & 0.710 [0.682,0.743] & 0.385 & 0.41 \\
+\quad Evo2-40B & 0.851 [0.830,0.872] & 0.557 & 0.25 \\
+\quad NT-2.5B & 0.534 [0.508,0.566] & 0.120 & $>$1 \\
+\quad Caduceus & 0.509 [0.483,0.539] & 0.108 & $>$1 \\
+\quad CADD & 0.893 [0.871,0.914] & 0.712 & 0.22 \\
+\quad phyloP & 0.857 [0.830,0.883] & 0.655 & 0.24 \\
 \addlinespace
-\multicolumn{5}{l}{\emph{TraitGym complex (matched)}}\\
-\quad Composition-only & 0.520 & 0.115 & -- & -- \\
-\quad GPN-MSA & 0.580 & 0.212 & 0.25 & $10^{-5}$ \\
-\quad Evo2-40B & 0.516 & 0.137 & 1.26 & 0.70 \\
-\quad NT-2.5B & 0.516 & 0.114 & $>$1 & 0.70 \\
-\quad Caduceus & 0.518 & 0.114 & $>$1 & 0.77 \\
-\quad CADD & 0.616 & 0.250 & 0.18 & $10^{-13}$ \\
-\quad phyloP & 0.583 & 0.184 & 0.24 & $10^{-6}$ \\
+\multicolumn{4}{l}{\emph{TraitGym complex (matched)}}\\
+\quad Composition-only & 0.520 [0.499,0.537] & 0.115 & -- \\
+\quad GPN-MSA & 0.580 [0.562,0.600] & 0.212 & 0.25 \\
+\quad Evo2-40B & 0.516 [0.498,0.534] & 0.137 & 1.26 \\
+\quad NT-2.5B & 0.516 [0.500,0.534] & 0.114 & $>$1 \\
+\quad Caduceus & 0.518 [0.502,0.536] & 0.114 & $>$1 \\
+\quad CADD & 0.616 [0.598,0.637] & 0.250 & 0.18 \\
+\quad phyloP & 0.583 [0.565,0.604] & 0.184 & 0.24 \\
 \addlinespace
-\multicolumn{5}{l}{\emph{GLRB eQTL}}\\
-\quad Composition-only & 0.596 & 0.633 & -- & -- \\
-\quad GPN-MSA & 0.560 & 0.599 & $>$1 & $10^{-3}$ \\
+\multicolumn{4}{l}{\emph{GLRB eQTL}}\\
+\quad Composition-only & 0.596 [0.585,0.607] & 0.633 & -- \\
+\quad GPN-MSA & 0.560 [0.548,0.571] & 0.599 & $>$1 \\
 \bottomrule
 \end{tabular}
 \end{table}

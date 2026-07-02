@@ -106,6 +106,43 @@ def per_chrom_auc(df, score_col, label_col="label_bin", chrom_col="chrom", orien
                 n=int(r["n"].sum()), n_chrom=len(r), per_chrom=r)
 
 
+def per_chrom_auc_ci(df, score_col, label_col="label_bin", chrom_col="chrom",
+                     n_boot=300, seed=0, orient_score=True):
+    """95% CI for the per-chromosome-weighted AUROC via a stratified bootstrap that resamples
+    rows WITHIN each chromosome (so the CI uses the same estimator as per_chrom_auc)."""
+    y = df[label_col].astype(int).values
+    s = df[score_col].astype("float64").values
+    if orient_score:
+        s, _ = orient(s, y)
+    ch = df[chrom_col].values
+    m = ~np.isnan(s)
+    s, y, ch = s[m], y[m], ch[m]
+    groups = []
+    for chrom in pd.unique(ch):
+        idx = np.where(ch == chrom)[0]
+        if len(idx) >= 10 and len(np.unique(y[idx])) >= 2:
+            groups.append(idx)
+    if not groups:
+        return dict(auroc=np.nan, lo=np.nan, hi=np.nan)
+    rng = np.random.default_rng(seed)
+    boot = np.empty(n_boot)
+    for b in range(n_boot):
+        aucs, ns = [], []
+        for idx in groups:
+            bi = rng.choice(idx, len(idx), replace=True)
+            if len(np.unique(y[bi])) < 2:
+                continue
+            aucs.append(roc_auc_score(y[bi], s[bi])); ns.append(len(bi))
+        if aucs:
+            wv = np.array(ns) / sum(ns)
+            boot[b] = float((wv * np.array(aucs)).sum())
+        else:
+            boot[b] = np.nan
+    point = per_chrom_auc(df, score_col, label_col, chrom_col, orient_score)["auroc"]
+    return dict(auroc=point, lo=float(np.nanpercentile(boot, 2.5)),
+                hi=float(np.nanpercentile(boot, 97.5)))
+
+
 # ---------------------------------------------------------------- composition classifier
 
 def composition_cv(df, label_col="label_bin", chrom_col="chrom", feat_cols=None,
