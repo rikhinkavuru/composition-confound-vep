@@ -147,7 +147,8 @@ alignment-based anchor present on every benchmark. Our composition baseline is a
 histogram gradient-boosted-tree classifier (250 trees, learning rate $0.05$) on the $19$
 C1/C2 features only (the $\Delta_k$ and $\Delta$GC values at the three windows, the
 pentanucleotide rate, CpG and transition indicators, and flanking GC), with no sequence
-context and no embedding.
+context and no embedding. As a learned-from-scratch reference we also train a small one-hot
+CNN on $\pm 100$ bp windows under the same folds (the ``does pretraining help'' control).
 
 \paragraph{Protocol.} We report the area under the ROC curve (AUROC) and the area under the
 precision-recall curve (AUPRC), oriented so that higher scores indicate the positive class.
@@ -388,12 +389,18 @@ within fixed-background saturation screens.
 the headline claim in gLM VEP papers, but not the only use of these models; fine-tuning is
 out of scope and we include CADD and conservation to bound the integrative-model comparison.
 Our composition features are a specific, if broad, operationalisation of the confound, and
-the recovery ratio depends on classifier capacity, which we fix in advance. The ClinVar
-noncoding set includes cCRE variants that also overlap coding annotations; a strict noncoding
-subset is a natural robustness check. Composition and function are genuinely correlated, so
-the goal is not to declare composition non-biological but to test whether a model advertised
-as understanding regulatory grammar is reducible to a mutation-rate detector on the
-benchmarks used to certify it.
+the recovery ratio depends on classifier capacity, which we fix in advance; a supervised
+one-hot CNN trained on the same windows stays below both the composition baseline and the
+gLMs on every benchmark (AUROC $0.52$--$0.56$), so the composition features are not merely a
+strong learner exploiting labels. The ClinVar noncoding set includes cCRE variants that also
+overlap coding annotations, but the effect is unchanged on the strict noncoding subset
+(Section~\ref{sec:e2}). Our two clinical/statistical benchmarks span two control regimes,
+ClinVar-benign for ClinVar and gnomAD-common frequency-matched controls for TraitGym, and the
+composition recovery is largest exactly where the controls are themselves ascertainment-biased
+(ClinVar-benign); a same-positive-set swap of ClinVar controls to gnomAD-common is a clean
+follow-up. Composition and function are genuinely correlated, so the goal is not to declare
+composition non-biological but to test whether a model advertised as understanding regulatory
+grammar is reducible to a mutation-rate detector on the benchmarks used to certify it.
 
 \paragraph{Recommendations.} Report a composition baseline alongside gLM VEP, prefer matched
 benchmarks or the calibrated score for cross-model comparison, and evaluate on
