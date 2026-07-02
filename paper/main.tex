@@ -28,7 +28,7 @@ only context-free features that require no learning. A composition-only classifi
 AUROC $0.720$ on noncoding ClinVar and recovers $45$--$53\%$ of the above-chance AUROC of
 every leading model, including Evo2-40B, GPN-MSA, CADD and phyloP; the result is unchanged
 when coding-overlapping variants are removed. On carefully composition-matched benchmarks
-(TraitGym) the same models drop to $20$--$25\%$ recovery, so matching removes roughly half of
+(TraitGym) the same models drop to roughly a fifth to a quarter, so matching removes half of
 the confound but not all of it. The confound is strongly
 model dependent: smaller single-sequence gLMs (Nucleotide Transformer, Caduceus, HyenaDNA)
 do not exceed the composition baseline on any benchmark, while alignment-based
@@ -168,7 +168,7 @@ Figure~\ref{fig:confound}(a) reports the partial Spearman correlation between $|
 and the pentanucleotide mutation rate, controlling for consequence. GPN-MSA is the most
 strongly coupled model at $\rho=-0.33$ on ClinVar and $-0.16$ to $-0.20$ on TraitGym,
 consistent with an alignment model that tracks neutral rate. Evo2-40B is intermediate
-($-0.08$ to $-0.18$), Evo2-7B is weak ($\approx-0.04$), and the smaller single-sequence
+($-0.08$ to $-0.18$), Evo2-7B weaker ($-0.03$ to $-0.13$), and the smaller single-sequence
 models (Nucleotide Transformer, Caduceus, HyenaDNA) are near zero. Conservation baselines
 show similar coupling to the models. The confound is present but is not uniform across the
 model class.
@@ -203,7 +203,7 @@ interval, CI, $0.716$--$0.722$) with no sequence context. The leading models rea
 (GPN-MSA), $0.960$ (Evo2-7B), $0.963$ (Evo2-40B), $0.986$ (CADD) and $0.912$ (phyloP), so the
 recovery ratio $(\text{comp}-0.5)/(\text{model}-0.5)$ is $0.45$--$0.53$ for every one (all
 DeLong $p\approx 0$). On composition-matched TraitGym the same baseline reaches only $0.586$
-(Mendelian) and $0.520$ (complex), with recovery ratios of $0.21$--$0.25$ for the leading
+(Mendelian) and $0.520$ (complex), with recovery ratios of $0.18$--$0.25$ for the leading
 models (GPN-MSA, Evo2-40B, CADD, phyloP); weaker gLMs such as Evo2-7B ($0.41$) and SpeciesLM
 ($0.72$) recover higher because they sit closer to the composition baseline. On GLRB causal
 eQTL the baseline ($0.596$) matches or exceeds GPN-MSA ($0.560$). This roughly two-fold gap
