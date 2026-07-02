@@ -1,0 +1,2 @@
+model,dataset,corr_mu_raw,corr_mu_cal,auroc_raw,auroc_cal,ctx_coverage
+GPN-MSA,ClinVar,-0.3326343615841542,-0.17806607798041993,0.9583176498189174,0.9606372154193388,1.0

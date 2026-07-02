@@ -1,0 +1,24 @@
+# Large raw + processed data (regenerable from public sources via code/)
+data/
+logs/
+*.log
+
+# LaTeX build intermediates
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.out
+paper/*.log
+paper/jmlr_pkg/
+paper/jmlr.zip
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Audit scratch
+ledger.json
+
+# OS
+.DS_Store
