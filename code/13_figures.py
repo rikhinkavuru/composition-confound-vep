@@ -26,10 +26,11 @@ FIG = os.path.join(RES, "figures")
 os.makedirs(FIG, exist_ok=True)
 
 plt.rcParams.update({
-    "font.size": 9, "axes.titlesize": 10, "axes.labelsize": 9,
-    "legend.fontsize": 8, "xtick.labelsize": 8, "ytick.labelsize": 8,
-    "axes.spines.top": False, "axes.spines.right": False, "figure.dpi": 150,
-    "savefig.bbox": "tight", "pdf.fonttype": 42,
+    "font.size": 9.5, "axes.titlesize": 10.5, "axes.labelsize": 9.5,
+    "legend.fontsize": 8.5, "xtick.labelsize": 8.5, "ytick.labelsize": 8.5,
+    "axes.spines.top": False, "axes.spines.right": False, "figure.dpi": 220,
+    "savefig.bbox": "tight", "pdf.fonttype": 42, "axes.titleweight": "bold",
+    "axes.linewidth": 0.8, "axes.titlepad": 8, "figure.facecolor": "white",
 })
 C = {"ClinVar": "#d1495b", "TraitGym-mendelian": "#2e86ab", "TraitGym-complex": "#61a5c2",
      "GLRB-eQTL": "#8d99ae"}
