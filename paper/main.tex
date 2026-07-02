@@ -227,11 +227,17 @@ subset that excludes the $46{,}852$ variants annotated as coding ($106{,}656$ SN
 leaves the composition baseline at AUROC $0.734$ and every recovery ratio in the
 $0.48$--$0.50$ range, essentially unchanged from the full set.
 
+Nor is it an artifact of ClinVar-benign ascertainment. Swapping the ClinVar-benign controls for
+gnomAD common variants (allele frequency $\geq0.05$), the field-standard proxy-neutral control,
+on the same pathogenic set makes the confound stronger: the composition baseline rises to AUROC
+$0.777$ and its recovery ratio against GPN-MSA rises from $0.48$ to $0.57$, since common
+variants concentrate at the high-mutation-rate contexts the composition features encode.
+
 Because the recovery ratio is not a decomposition, we also test unique contribution by
 combining composition and model features under the same folds. On ClinVar, adding GPN-MSA to
 composition raises AUROC from $0.717$ to $0.971$ ($+0.254$), while adding composition to
-GPN-MSA adds only $+0.013$ (Evo2-40B: $+0.193$ versus $+0.057$; TraitGym Mendelian: $+0.306$
-versus $+0.007$). The strong models thus subsume composition and carry large independent signal
+GPN-MSA adds only $+0.013$ (Evo2-40B: $+0.193$ versus $+0.057$). The strong models thus
+subsume composition and carry large independent signal
 on top of it, whereas the smaller single-sequence gLMs do not exceed composition
 (Table~\ref{tab:main}). The confound inflates the leaderboard \emph{impression} without making
 the stronger models reducible to composition.
@@ -377,35 +383,28 @@ Our results support a specific and calibrated claim rather than a blanket dismis
 context-free composition and mutation-rate baseline recovers about half of the apparent
 zero-shot VEP performance of leading gLMs on the unmatched, region-heterogeneous benchmarks
 that dominate reported leaderboards, and about a fifth on carefully matched benchmarks. The
-confound bites hardest on the smaller single-sequence gLMs, which do not exceed the
-baseline on any benchmark and sit at chance once benchmarks are matched. This is
-consistent with \citet{tang2025koo}, who find that frozen gLM representations rarely beat
-one-hot encodings. Alignment-based and large autoregressive models keep signal that survives
+confound bites hardest on the smaller single-sequence gLMs, which do not exceed the baseline on
+any benchmark, consistent with \citet{tang2025koo}. Alignment-based and large autoregressive
+models keep signal that survives
 composition matching and concentrates on motif-disrupting variants. The confound is an
-across-set ascertainment phenomenon and not a local-context artifact, since it vanishes
-within fixed-background saturation screens.
+across-set ascertainment phenomenon, not a local-context artifact.
 
 \paragraph{Limitations.} We score zero-shot LLR, the deployed clinical setting and the
 headline claim in gLM VEP papers; fine-tuning is out of scope. The recovery ratio depends on
 classifier capacity, but a supervised one-hot CNN on the same windows stays below both the
 composition baseline and the gLMs everywhere (AUROC $0.52$--$0.56$), so the baseline is not
 merely a strong learner. The ClinVar effect is unchanged on the strict noncoding subset
-(Section~\ref{sec:e2}). Our two benchmarks span two control regimes, ClinVar-benign and
-gnomAD-common frequency-matched (TraitGym), and recovery is largest where the controls are
-themselves ascertainment-biased; a same-positive gnomAD-common swap is a clean follow-up.
-Composition and function are genuinely correlated, so the goal is not to call composition
+(Section~\ref{sec:e2}) and strengthens under gnomAD-common controls rather than depending on
+ClinVar-benign ascertainment. Composition and function are genuinely correlated, so the goal is
+not to call composition
 non-biological but to test whether a model advertised as learning regulatory grammar reduces
-to a mutation-rate detector on the benchmarks used to certify it.
+to a mutation-rate detector on the benchmarks used to certify it. In practice, report a
+composition baseline alongside gLM VEP, prefer matched or calibrated scores for cross-model
+comparison, and evaluate on motif-disrupting variants.
 
-\paragraph{Recommendations.} Report a composition baseline alongside gLM VEP, prefer matched
-benchmarks or the calibrated score for cross-model comparison, and evaluate on
-motif-disrupting variants where the grammar claim is testable.
-
-\paragraph{Reproducibility.} All scores are authors' released per-variant values (TraitGym,
-goodarzilab Evo2-ClinVar, songlab genome-wide GPN-MSA) or public annotations (CADD, phyloP,
-phastCons, SpliceAI, ENCODE cCREs); composition features use the Carlson pentanucleotide table
-and hg38. Code, the per-context neutral tables, and the released \texttt{calibrate\_llr}
-transform are available at
+\paragraph{Reproducibility.} All model scores are authors' released per-variant values or
+public annotations; composition features use the Carlson pentanucleotide table and hg38. Code,
+the per-context neutral tables, and the released \texttt{calibrate\_llr} transform are at
 \url{https://github.com/rikhinkavuru/composition-confound-vep}.
 
 % Acknowledgements omitted for brevity.
