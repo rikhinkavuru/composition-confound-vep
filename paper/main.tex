@@ -25,7 +25,7 @@ mutationally expected a substitution is given its base composition and sequence 
 We isolate and quantify this composition/mutation-expectedness axis as a confound on real
 clinical and functional VEP benchmarks, across nine gLMs and four benchmark families, using
 only context-free features that require no learning. A composition-only classifier reaches
-AUROC $0.72$ on noncoding ClinVar and recovers $45$--$53\%$ of the above-chance AUROC of
+AUROC $0.720$ on noncoding ClinVar and recovers $45$--$53\%$ of the above-chance AUROC of
 every leading model, including Evo2-40B, GPN-MSA, CADD and phyloP; the result is unchanged
 when coding-overlapping variants are removed. On carefully composition-matched benchmarks
 (TraitGym) the same baseline recovers only $17$--$25\%$, so matching removes roughly half of
@@ -194,8 +194,8 @@ alignment-based and large models keep a stable edge.}
 \subsection{E2: a composition baseline recovers much of aggregate performance}
 \label{sec:e2}
 
-On ClinVar the composition-only classifier reaches AUROC $0.720$ (bootstrap CI
-$0.716$--$0.722$) with no sequence context and no model. The leading models reach $0.958$
+On ClinVar the composition-only classifier reaches AUROC $0.720$ (bootstrap 95\% confidence
+interval, CI, $0.716$--$0.722$) with no sequence context and no model. The leading models reach $0.958$
 (GPN-MSA), $0.960$ (Evo2-7B), $0.963$ (Evo2-40B), $0.986$ (CADD) and $0.912$ (phyloP), so the
 recovery ratio $(\text{comp}-0.5)/(\text{model}-0.5)$ is $0.45$--$0.53$ for every one of them
 (all DeLong $p\approx 0$; the baseline is below each model, but recovers roughly half of its
