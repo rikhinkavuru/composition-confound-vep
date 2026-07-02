@@ -9,7 +9,7 @@
 
 \title[How Much of gLM Variant-Effect Prediction Is Base Composition?]{How Much of Genomic Language Model Variant-Effect Prediction Is Base Composition?}
 
-\author{\Name{Rikhin Kavuru} \Email{rajeshkavuru@gmail.com}\\
+\author{\Name{Rikhin Kavuru} \Email{rikhinkavuru@gmail.com}\\
  \addr Independent Author}
 
 \begin{document}
@@ -171,6 +171,14 @@ models (Nucleotide Transformer, Caduceus, HyenaDNA) are near zero. Conservation 
 show similar coupling to the models. The confound is present but is not uniform across the
 model class.
 
+This coupling is not an artifact of the labelled sets. At genome-wide neutral sites, GPN-MSA's
+mean score per pentanucleotide context tracks the Carlson neutral mutation rate at Spearman
+$\rho=0.63$ ($p<10^{-16}$, all $3{,}072$ contexts, from $3.6\times10^{7}$ sampled scores):
+highly mutable contexts, above all CpG sites, receive systematically less deleterious scores
+(mean $-0.10$ at CpG-centred contexts versus $-1.33$ elsewhere). The model has learned the
+neutral mutation spectrum, which is exactly the component that leaks into the LLR when
+variants are ascertained non-randomly across mutation types.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig2_confound.pdf}
@@ -196,8 +204,12 @@ $0.17$--$0.25$ against the models that clear chance. On GLRB causal eQTL the bas
 ($0.596$) matches or exceeds GPN-MSA ($0.560$), so the little signal present is
 composition-explainable. Table~\ref{tab:main} reports the full comparison and
 Figure~\ref{fig:recovery} summarises the roughly two-fold difference between unmatched and
-matched benchmarks. Matching removes about half of the confound, which is a positive result
-for TraitGym, but a measurable residual leaks past even MAF- and LD-matched controls.
+matched benchmarks. The difference is significant: the composition-only AUROC is $0.720$
+(bootstrap 95\% CI $0.716$--$0.722$) on ClinVar versus $0.586$ ($0.556$--$0.613$) on TraitGym
+Mendelian and $0.520$ ($0.503$--$0.540$) on complex, with non-overlapping intervals, while the
+model AUROC intervals are narrow given $n>10^4$. Matching removes about half of the confound,
+which is a positive result for TraitGym, but a measurable residual leaks past even MAF- and
+LD-matched controls.
 
 The ClinVar result is not an artifact of coding overlap. Restricting to the strict-noncoding
 subset that excludes the $46{,}852$ variants annotated as coding ($106{,}656$ SNVs remain)
