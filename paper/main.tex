@@ -23,12 +23,12 @@ variant by the log-likelihood ratio $\mathrm{LLR}=\log p(\text{alt})-\log p(\tex
 This quantity mixes learned regulatory function with a purely local signal, namely how
 mutationally expected a substitution is given its base composition and sequence context.
 We isolate and quantify this composition/mutation-expectedness axis as a confound on real
-clinical and functional VEP benchmarks, across nine gLMs and four benchmark families, using
+clinical and functional VEP benchmarks, across eight gLMs and four benchmark families, using
 only context-free features that require no learning. A composition-only classifier reaches
 AUROC $0.720$ on noncoding ClinVar and recovers $45$--$53\%$ of the above-chance AUROC of
 every leading model, including Evo2-40B, GPN-MSA, CADD and phyloP; the result is unchanged
 when coding-overlapping variants are removed. On carefully composition-matched benchmarks
-(TraitGym) the same baseline recovers only $17$--$25\%$, so matching removes roughly half of
+(TraitGym) the same models drop to $20$--$25\%$ recovery, so matching removes roughly half of
 the confound but not all of it. The confound is strongly
 model dependent: smaller single-sequence gLMs (Nucleotide Transformer, Caduceus, HyenaDNA)
 do not exceed the composition baseline on any benchmark, while alignment-based
@@ -138,10 +138,10 @@ background. \emph{Genomics Long-Range Benchmark (GLRB) causal expression QTL}
 chance.
 
 \paragraph{Models.} We use authors' released per-variant scores wherever available so that
-model quality is not confounded by our own inference. On TraitGym this gives nine gLMs
-(GPN-MSA, an alignment-based multiple-sequence-alignment (MSA) model; Evo2-1B/7B/40B;
-Nucleotide Transformer; Caduceus; HyenaDNA; SpeciesLM; and AIDO.DNA) plus CADD, phyloP and
-phastCons. On ClinVar we use precomputed Evo2-7B/40B and Nucleotide Transformer scores
+model quality is not confounded by our own inference. On TraitGym this gives eight gLMs
+(GPN-MSA, an alignment-based multiple-sequence-alignment (MSA) model; GPN, its
+single-sequence counterpart; Evo2-7B and Evo2-40B; Nucleotide Transformer; Caduceus;
+HyenaDNA; and SpeciesLM) plus CADD, phyloP and phastCons. On ClinVar we use precomputed Evo2-7B/40B and Nucleotide Transformer scores
 together with a genome-wide GPN-MSA tabix lookup, CADD, phyloP and SpliceAI. GPN-MSA is the
 alignment-based anchor present on every benchmark. Our composition baseline is a
 histogram gradient-boosted-tree classifier (250 trees, learning rate $0.05$) on the $19$
@@ -208,8 +208,10 @@ interval, CI, $0.716$--$0.722$) with no sequence context and no model. The leadi
 recovery ratio $(\text{comp}-0.5)/(\text{model}-0.5)$ is $0.45$--$0.53$ for every one of them
 (all DeLong $p\approx 0$; the baseline is below each model, but recovers roughly half of its
 above-chance discrimination). On composition-matched TraitGym the same baseline reaches only
-$0.586$ (Mendelian) and $0.520$ (complex), with recovery ratios of $0.21$--$0.25$ and
-$0.17$--$0.25$ against the models that clear chance. On GLRB causal eQTL the baseline
+$0.586$ (Mendelian) and $0.520$ (complex), with recovery ratios of $0.21$--$0.25$ for the
+leading models (GPN-MSA, Evo2-40B, CADD, phyloP); weaker gLMs such as Evo2-7B ($0.41$) and
+SpeciesLM ($0.72$) recover higher precisely because they sit closer to the composition
+baseline. On GLRB causal eQTL the baseline
 ($0.596$) matches or exceeds GPN-MSA ($0.560$), so the little signal present is
 composition-explainable. Table~\ref{tab:main} reports the full comparison and
 Figure~\ref{fig:recovery} summarises the roughly two-fold difference between unmatched and
