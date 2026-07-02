@@ -180,6 +180,13 @@ highly mutable contexts, above all CpG sites, receive systematically less delete
 neutral mutation spectrum, which is exactly the component that leaks into the LLR when
 variants are ascertained non-randomly across mutation types.
 
+That ascertainment is directly visible in the labels. In ClinVar, benign SNVs sit at higher
+mutation-rate contexts than pathogenic ones (mean pentanucleotide rate $0.033$ versus $0.028$,
+$p<10^{-140}$), are more often transitions ($76\%$ versus $65\%$, $p<10^{-290}$), and more
+often CpG ($35\%$ versus $31\%$). A score that encodes the neutral spectrum therefore separates
+the two classes without any regulatory understanding, which is the label pathway the confound
+travels.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig2_confound.pdf}
@@ -216,6 +223,17 @@ The ClinVar result is not an artifact of coding overlap. Restricting to the stri
 subset that excludes the $46{,}852$ variants annotated as coding ($106{,}656$ SNVs remain)
 leaves the composition baseline at AUROC $0.734$ and every recovery ratio in the
 $0.48$--$0.50$ range, essentially unchanged from the full set.
+
+The recovery ratio measures how much of the above-chance AUROC a trivial baseline reaches, not
+a decomposition of the model, so we also test unique contribution by training composition and
+model features together under the same folds. On ClinVar, adding GPN-MSA to the composition
+features raises AUROC from $0.717$ to $0.971$ ($+0.254$), while adding composition to GPN-MSA
+raises it by only $+0.013$; the pattern holds for Evo2-40B ($+0.193$ versus $+0.057$) and on
+TraitGym Mendelian ($+0.306$ versus $+0.007$). The strong models thus subsume the composition
+signal and carry large composition-independent signal on top of it, whereas the smaller
+single-sequence gLMs do not exceed composition at all (Table~\ref{tab:main}). The confound
+inflates the leaderboard \emph{impression}, since a context-free baseline already scores high,
+without implying that the stronger models are reducible to composition.
 
 \begin{figure}[t]
 \centering

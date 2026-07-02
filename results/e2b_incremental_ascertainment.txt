@@ -1,0 +1,21 @@
+=== A. INCREMENTAL VALUE ===
+
+[ClinVar] composition-only AUROC=0.717
+   GPN-MSA   model-only=0.958 comp+model=0.971 d(model>comp)=+0.254 d(comp>model)=+0.013
+   Evo2-40B  model-only=0.853 comp+model=0.910 d(model>comp)=+0.193 d(comp>model)=+0.057
+
+[TraitGym-mend] composition-only AUROC=0.586
+   GPN-MSA   model-only=0.885 comp+model=0.892 d(model>comp)=+0.306 d(comp>model)=+0.007
+   Evo2-40B  model-only=0.818 comp+model=0.814 d(model>comp)=+0.228 d(comp>model)=-0.004
+
+[TraitGym-cplx] composition-only AUROC=0.522
+   GPN-MSA   model-only=0.588 comp+model=0.605 d(model>comp)=+0.083 d(comp>model)=+0.017
+   Evo2-40B  model-only=0.513 comp+model=0.533 d(model>comp)=+0.012 d(comp>model)=+0.020
+
+=== B. ASCERTAINMENT (ClinVar path vs benign) ===
+   mu_5mer        path=0.0277 benign=0.0332 rank-biserial=+0.101 p=7.0e-143
+   cpg_ref        path=0.3066 benign=0.3455 rank-biserial=+0.039 p=3.4e-33
+   is_transition  path=0.6542 benign=0.7643 rank-biserial=+0.110 p=2.1e-298
+   flank_gc_w51   path=0.5607 benign=0.5793 rank-biserial=+0.103 p=1.6e-148
+   dGC_w51        path=0.0082 benign=0.0086 rank-biserial=+nan p=nan
+DONE
