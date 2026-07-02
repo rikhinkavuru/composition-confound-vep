@@ -1,0 +1,185 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Supplementary Material\\[4pt]
+\large How Much of Genomic Language Model Variant-Effect Prediction Is Base Composition?}
+\author{Rikhin Kavuru}
+\date{}
+
+\begin{document}
+\maketitle
+
+This supplement reports the complete result tables and implementation details underlying the
+main paper. The main paper stands alone; nothing here is required to follow its argument. Code
+and all released artifacts are at \texttt{github.com/rikhinkavuru/composition-confound-vep}.
+
+\paragraph{Implementation.} Composition features (C1/C2) are computed from hg38 with the
+Carlson pentanucleotide neutral-rate table; the $19$ features are the $\Delta_k$
+($k\in\{1,2,3\}$) and $\Delta$GC values at windows $w\in\{11,21,51\}$, the pentanucleotide
+rate, reference and alternate CpG indicators, a transition indicator, and flanking GC. The
+composition classifier is a histogram gradient-boosted-tree model ($250$ trees, learning rate
+$0.05$) trained leave-one-chromosome-out. The one-hot CNN uses $\pm100$ bp windows (reference
+with the alternate substituted at the centre), two $\mathrm{Conv1d}$ layers ($32$ channels,
+width $8$), global max-pool, and a linear head, trained with Adam under chromosome-grouped
+folds. The pentanucleotide calibration subtracts a per-context neutral score estimated
+leave-one-chromosome-out from control variants, or, in the label-free variant, from a
+genome-wide table of $3{,}072$ contexts and $3.6\times10^{7}$ sampled GPN-MSA scores. All
+model scores are authors' released per-variant values; no gLM inference is run locally.
+
+\begin{table}[h]
+\centering
+\caption{Complete leave-one-chromosome-out AUROC, AUPRC, composition recovery ratio, and
+Benjamini--Hochberg-adjusted DeLong $p$ (model vs composition) for all methods on every
+benchmark. Recovery ratios above one ($>$1) mean the method does not exceed the composition
+baseline.}
+\small
+\begin{tabular}{lcccc}
+\toprule
+Method & AUROC & AUPRC & Recovery & DeLong $p$ \\
+\midrule
+\multicolumn{5}{l}{\emph{ClinVar} (composition-only AUROC 0.720)}\\
+\quad CADD & 0.986 & 0.958 & 0.45 & $<10^{-16}$ \\
+\quad Evo2-40B & 0.963 & 0.870 & 0.47 & $<10^{-16}$ \\
+\quad GPN-MSA(csv) & 0.961 & 0.937 & 0.48 & $<10^{-16}$ \\
+\quad Evo2-7B & 0.960 & 0.882 & 0.48 & $<10^{-16}$ \\
+\quad GPN-MSA & 0.958 & 0.861 & 0.48 & $<10^{-16}$ \\
+\quad phyloP-447w & 0.912 & 0.757 & 0.53 & $<10^{-16}$ \\
+\quad phyloP-100w & 0.912 & 0.775 & 0.53 & $<10^{-16}$ \\
+\quad SpliceAI & 0.667 & 0.502 & 1.32 & 5e-41 \\
+\addlinespace
+\multicolumn{5}{l}{\emph{TraitGym-mendelian} (composition-only AUROC 0.586)}\\
+\quad GPN-MSA & 0.904 & 0.694 & 0.21 & 2e-68 \\
+\quad CADD & 0.893 & 0.712 & 0.22 & 2e-50 \\
+\quad phastCons & 0.858 & 0.527 & 0.24 & 7e-40 \\
+\quad phyloP-100v & 0.857 & 0.655 & 0.24 & 2e-34 \\
+\quad Evo2-40B & 0.851 & 0.557 & 0.25 & 5e-45 \\
+\quad GPN & 0.718 & 0.422 & 0.40 & 1e-08 \\
+\quad Evo2-7B & 0.710 & 0.385 & 0.41 & 6e-08 \\
+\quad SpeciesLM & 0.620 & 0.201 & 0.72 & 1e-01 \\
+\quad NT-2.5B & 0.534 & 0.120 & $>$1 & 3e-02 \\
+\quad HyenaDNA & 0.513 & 0.115 & $>$1 & 3e-03 \\
+\quad Caduceus & 0.509 & 0.108 & $>$1 & 1e-03 \\
+\addlinespace
+\multicolumn{5}{l}{\emph{TraitGym-complex} (composition-only AUROC 0.520)}\\
+\quad phastCons & 0.617 & 0.237 & 0.17 & 4e-13 \\
+\quad CADD & 0.616 & 0.250 & 0.18 & 8e-13 \\
+\quad phyloP-100v & 0.583 & 0.184 & 0.24 & 2e-06 \\
+\quad GPN-MSA & 0.580 & 0.212 & 0.25 & 1e-05 \\
+\quad Caduceus & 0.518 & 0.114 & 1.13 & 8e-01 \\
+\quad Evo2-40B & 0.516 & 0.137 & 1.26 & 7e-01 \\
+\quad NT-2.5B & 0.516 & 0.114 & 1.27 & 7e-01 \\
+\quad GPN & 0.510 & 0.112 & $>$1 & 4e-01 \\
+\quad HyenaDNA & 0.508 & 0.111 & $>$1 & 3e-01 \\
+\quad Evo2-7B & 0.505 & 0.118 & $>$1 & 3e-01 \\
+\quad SpeciesLM & 0.504 & 0.110 & $>$1 & 2e-01 \\
+\addlinespace
+\multicolumn{5}{l}{\emph{GLRB-eQTL} (composition-only AUROC 0.596)}\\
+\quad GPN-MSA & 0.560 & 0.599 & $>$1 & 4e-03 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{E1 partial Spearman correlation between $|\mathrm{LLR}|$ and each context-free
+confounder (controlling for consequence): 5-mer mutation rate $\mu_5$, reference CpG,
+$\Delta$GC, 3-mer spectrum shift $\Delta_3$, and flanking GC.}
+\small
+\begin{tabular}{lccccc}
+\toprule
+Method & $\mu_5$ & CpG & $\Delta$GC & $\Delta_3$ & flankGC \\
+\midrule
+\multicolumn{6}{l}{\emph{ClinVar}}\\
+\quad CADD & -0.06 & -0.04 & -0.03 & +0.05 & -0.04 \\
+\quad Evo2-40B & -0.18 & -0.12 & -0.11 & +0.03 & -0.04 \\
+\quad Evo2-7B & -0.13 & -0.09 & -0.07 & +0.05 & -0.06 \\
+\quad GPN-MSA & -0.33 & -0.31 & -0.14 & -0.00 & -0.11 \\
+\quad GPN-MSA(csv) & -0.27 & -0.24 & -0.13 & +0.02 & -0.12 \\
+\quad SpliceAI & -0.04 & -0.05 & -0.02 & +0.03 & -0.06 \\
+\quad phyloP-100w & +0.04 & +0.06 & +0.02 & +0.05 & -0.00 \\
+\quad phyloP-447w & +0.16 & +0.19 & +0.05 & +0.07 & +0.05 \\
+\addlinespace
+\multicolumn{6}{l}{\emph{TraitGym-mendelian}}\\
+\quad CADD & -0.02 & -0.00 & -0.01 & -0.01 & +0.23 \\
+\quad Caduceus & +0.07 & +0.08 & +0.10 & +0.11 & +0.06 \\
+\quad Evo2-40B & -0.11 & +0.00 & -0.07 & +0.01 & +0.20 \\
+\quad Evo2-7B & -0.03 & +0.01 & -0.01 & +0.06 & +0.07 \\
+\quad GPN & +0.06 & +0.13 & +0.04 & +0.12 & +0.18 \\
+\quad GPN-MSA & -0.16 & -0.09 & -0.10 & -0.00 & +0.04 \\
+\quad HyenaDNA & -0.01 & -0.03 & +0.04 & +0.01 & -0.01 \\
+\quad NT-2.5B & +0.11 & +0.12 & +0.10 & +0.13 & +0.04 \\
+\quad SpeciesLM & +0.03 & +0.08 & +0.06 & +0.10 & +0.10 \\
+\quad phastCons & -0.07 & -0.08 & -0.03 & -0.02 & -0.00 \\
+\quad phyloP-100v & +0.01 & +0.04 & -0.04 & +0.01 & +0.05 \\
+\addlinespace
+\multicolumn{6}{l}{\emph{TraitGym-complex}}\\
+\quad CADD & -0.02 & -0.03 & +0.01 & -0.01 & +0.02 \\
+\quad Caduceus & +0.01 & +0.11 & +0.00 & +0.10 & +0.01 \\
+\quad Evo2-40B & -0.08 & +0.03 & -0.06 & +0.06 & +0.05 \\
+\quad Evo2-7B & -0.05 & +0.05 & -0.05 & +0.08 & -0.00 \\
+\quad GPN & +0.15 & +0.26 & +0.07 & +0.13 & +0.14 \\
+\quad GPN-MSA & -0.20 & -0.15 & -0.09 & -0.01 & -0.12 \\
+\quad HyenaDNA & -0.04 & -0.01 & -0.04 & +0.02 & +0.01 \\
+\quad NT-2.5B & +0.04 & +0.14 & +0.01 & +0.12 & -0.01 \\
+\quad SpeciesLM & +0.03 & +0.14 & +0.01 & +0.11 & +0.03 \\
+\quad phastCons & -0.14 & -0.19 & -0.04 & -0.02 & -0.11 \\
+\quad phyloP-100v & +0.06 & +0.09 & +0.02 & +0.02 & +0.10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{E4 within-element Kircher saturation MPRA: raw versus partial Spearman of GPN-MSA
+LLR against measured log$_2$ effect (partial controls for substitution type, $\Delta$GC, and
+CpG), per element. The drop (raw$-$partial) is near zero throughout.}
+\small
+\begin{tabular}{lcccc}
+\toprule
+Element & $n$ & raw $\rho$ & partial $\rho$ & drop \\
+\midrule
+SORT1 & 5379 & -0.127 & -0.161 & +0.035 \\
+TERT & 3108 & +0.185 & +0.165 & +0.021 \\
+ZRS & 2910 & -0.018 & -0.040 & +0.022 \\
+PKLR & 2814 & +0.097 & +0.096 & +0.000 \\
+LDLR & 1908 & +0.397 & +0.403 & -0.005 \\
+FOXE1 & 1800 & -0.033 & -0.023 & -0.010 \\
+BCL11A & 1799 & +0.033 & +0.030 & +0.004 \\
+RET & 1797 & +0.131 & +0.129 & +0.002 \\
+MYCrs6983267 & 1792 & +0.017 & +0.024 & -0.007 \\
+IRF6 & 1785 & +0.193 & +0.207 & -0.013 \\
+MSMB & 1773 & +0.105 & +0.089 & +0.016 \\
+TCF7L2 & 1770 & -0.017 & -0.025 & +0.008 \\
+UC88 & 1761 & -0.010 & -0.005 & -0.005 \\
+ZFAND3 & 1736 & +0.199 & +0.199 & -0.000 \\
+MYCrs11986220 & 1389 & +0.041 & +0.041 & -0.000 \\
+IRF4 & 1353 & +0.216 & +0.217 & -0.002 \\
+GP1BA & 1154 & +0.149 & +0.121 & +0.028 \\
+F9 & 904 & +0.056 & +0.063 & -0.007 \\
+HNF4A & 855 & +0.057 & +0.066 & -0.009 \\
+HBG1 & 822 & +0.235 & +0.254 & -0.019 \\
+HBB & 561 & +0.332 & +0.336 & -0.004 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{One-hot CNN baseline (trained from scratch on $\pm100$ bp windows): it stays below
+both the composition baseline and the gLMs on every benchmark.}
+\small
+\begin{tabular}{lcc}
+\toprule
+Benchmark & AUROC & AUPRC \\
+\midrule
+TraitGym-mendelian & 0.516 & 0.099 \\
+TraitGym-complex & 0.537 & 0.113 \\
+ClinVar & 0.561 & 0.197 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
